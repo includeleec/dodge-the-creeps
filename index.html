@@ -3,18 +3,18 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dodge the Creeps · 浏览器直接玩的太空生存游戏</title>
-<meta name="description" content="驾驶小飞船在怪物洪流中生存：击落敌人、拾取强化、挑战最高分。HTML5 免下载，可安装为应用离线游玩。">
+<title>Dodge the Creeps · Space Survival Arcade</title>
+<meta name="description" content="驾驶小飞船在怪物洪流中生存：五种敌人、Boss 战、七种强化道具、生命值系统。HTML5 免下载，支持触屏，可安装离线游玩。">
 
 <!-- PWA -->
 <link rel="manifest" href="manifest.webmanifest">
-<meta name="theme-color" content="#05060f">
+<meta name="theme-color" content="#030509">
 <link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 
 <!-- 社交分享 -->
 <meta property="og:title" content="Dodge the Creeps">
-<meta property="og:description" content="在怪物洪流中活下去 —— 打开浏览器就能玩的街机小游戏">
+<meta property="og:description" content="A space survival arcade - play in your browser">
 <meta property="og:type" content="website">
 <meta property="og:image" content="icons/og-image.png">
 
@@ -25,363 +25,410 @@
     font-display: swap;
   }
   :root {
-    --bg: #05060f;
-    --surface: rgba(255, 255, 255, .04);
-    --border: rgba(255, 255, 255, .09);
-    --accent: #4db3ff;
-    --accent2: #ff6b6b;
-    --text: #eef2fa;
-    --muted: #8b93a7;
-    --radius: 20px;
+    --bg: #030509;
+    --panel: rgba(10, 18, 32, .55);
+    --line: rgba(77, 216, 255, .22);
+    --line-hi: rgba(77, 216, 255, .65);
+    --accent: #4dd8ff;
+    --warn: #ff5470;
+    --text: #d7e6f5;
+    --muted: #6b7f99;
+    --mono: "JetBrains Mono", "SFMono-Regular", Consolas, "Liberation Mono", monospace;
+    --px: "Press Start 2P", monospace;
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { scroll-behavior: smooth; }
   body {
     background: var(--bg); color: var(--text);
-    font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
-    overflow-x: hidden; line-height: 1.6;
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow-x: hidden; line-height: 1.65;
   }
-  ::selection { background: rgba(77, 179, 255, .35); }
+  ::selection { background: rgba(77, 216, 255, .3); }
 
-  /* ---------- 背景：极光光斑 + 星星 + 网格 ---------- */
-  .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
-  .blob {
-    position: absolute; border-radius: 50%;
-    filter: blur(110px); opacity: .5; will-change: transform;
-  }
-  .blob.b1 { width: 46vw; height: 46vw; left: -12vw; top: -14vw;
-    background: radial-gradient(circle, rgba(77,179,255,.30), transparent 70%);
-    animation: float1 26s ease-in-out infinite; }
-  .blob.b2 { width: 40vw; height: 40vw; right: -14vw; top: 30vh;
-    background: radial-gradient(circle, rgba(150,90,255,.26), transparent 70%);
-    animation: float2 32s ease-in-out infinite; }
-  .blob.b3 { width: 38vw; height: 38vw; left: 18vw; bottom: -20vw;
-    background: radial-gradient(circle, rgba(255,107,107,.20), transparent 70%);
-    animation: float1 38s ease-in-out infinite reverse; }
-  @keyframes float1 { 50% { transform: translate(6vw, 4vh) scale(1.12); } }
-  @keyframes float2 { 50% { transform: translate(-5vw, -6vh) scale(.92); } }
-
+  /* ---------- 背景：星野 + 细网格 + 扫描线 ---------- */
   .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    animation: drift 160s linear infinite; }
+    animation: drift 180s linear infinite; }
   .stars::after {
     content: ""; position: absolute; inset: -1000px;
     background-image:
-      radial-gradient(1.6px 1.6px at 20px 30px, #fff, transparent),
-      radial-gradient(1.6px 1.6px at 130px 80px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 20px 30px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 130px 80px, #cfe9ff, transparent),
       radial-gradient(1px 1px at 70px 150px, #fff, transparent),
-      radial-gradient(1.8px 1.8px at 200px 200px, #9fd0ff, transparent),
+      radial-gradient(1.6px 1.6px at 200px 200px, #4dd8ff, transparent),
       radial-gradient(1px 1px at 300px 60px, #fff, transparent),
-      radial-gradient(1.6px 1.6px at 380px 300px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 380px 300px, #fff, transparent),
       radial-gradient(1px 1px at 450px 120px, #ffd39f, transparent),
-      radial-gradient(1.6px 1.6px at 520px 400px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 520px 400px, #fff, transparent),
       radial-gradient(1px 1px at 600px 250px, #fff, transparent),
-      radial-gradient(1.8px 1.8px at 90px 420px, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 90px 420px, #cfe9ff, transparent),
       radial-gradient(1px 1px at 250px 520px, #fff, transparent),
-      radial-gradient(1.6px 1.6px at 700px 90px, #9fd0ff, transparent),
+      radial-gradient(1.5px 1.5px at 700px 90px, #4dd8ff, transparent),
       radial-gradient(1px 1px at 800px 350px, #fff, transparent),
-      radial-gradient(1.8px 1.8px at 900px 500px, #fff, transparent),
+      radial-gradient(1.5px 1.5px at 900px 500px, #fff, transparent),
       radial-gradient(1px 1px at 1000px 180px, #fff, transparent),
-      radial-gradient(1.6px 1.6px at 1100px 600px, #ffd39f, transparent);
+      radial-gradient(1.5px 1.5px at 1100px 600px, #ffd39f, transparent);
     background-size: 1200px 700px;
   }
   @keyframes drift { to { transform: translateY(700px); } }
-
-  .grid-overlay { position: fixed; inset: 0; z-index: 0; pointer-events: none;
-    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
-                      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
-    background-size: 56px 56px;
-    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  .grid { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(77,216,255,.028) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(77,216,255,.028) 1px, transparent 1px);
+    background-size: 44px 44px;
   }
+  .scanlines { position: fixed; inset: 0; z-index: 3; pointer-events: none;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,.10) 0 1px, transparent 1px 4px);
+    opacity: .5;
+  }
+  .vignette { position: fixed; inset: 0; z-index: 2; pointer-events: none;
+    background: radial-gradient(ellipse 90% 70% at 50% 40%, transparent 55%, rgba(0,0,0,.55)); }
 
-  nav, main, footer { position: relative; z-index: 1; }
+  nav, main, footer { position: relative; z-index: 4; }
 
   /* ---------- 导航 ---------- */
   nav {
     position: sticky; top: 0; z-index: 10;
-    display: flex; align-items: center; gap: .7rem;
-    padding: .8rem clamp(1rem, 4vw, 3rem);
-    background: rgba(5, 6, 15, .55);
-    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; gap: .8rem;
+    padding: .75rem clamp(1rem, 4vw, 3rem);
+    background: rgba(3, 5, 9, .72);
+    backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    font-family: var(--mono); font-size: .85rem;
   }
-  nav .logo { width: 30px; height: 30px; border-radius: 8px; }
-  nav .name { font-family: "Press Start 2P", monospace; font-size: .8rem; letter-spacing: .02em; }
+  nav .logo { width: 28px; height: 28px; }
+  nav .name { font-family: var(--px); font-size: .68rem; color: var(--accent);
+    letter-spacing: .04em; }
+  nav .tag { color: var(--muted); font-size: .72rem; }
   nav .spacer { flex: 1; }
   .btn {
     display: inline-flex; align-items: center; gap: .45rem;
-    padding: .55rem 1.25rem; border-radius: 999px;
-    font-size: .92rem; font-weight: 600; text-decoration: none;
-    border: 1px solid var(--border); color: var(--text);
-    background: var(--surface); cursor: pointer;
-    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+    padding: .5rem 1.15rem;
+    font-family: var(--mono); font-size: .8rem; font-weight: 600;
+    color: var(--text); text-decoration: none; cursor: pointer;
+    background: rgba(77, 216, 255, .06);
+    border: 1px solid var(--line);
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
+    transition: background .15s ease, color .15s ease, border-color .15s ease;
   }
-  .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.08); }
-  .btn.primary {
-    background: linear-gradient(120deg, var(--accent), #2f7fe0);
-    border: none; color: #04101f;
-    box-shadow: 0 0 24px rgba(77,179,255,.35);
-  }
-  .btn.primary:hover { box-shadow: 0 0 40px rgba(77,179,255,.55); }
+  .btn:hover { background: rgba(77, 216, 255, .16); border-color: var(--line-hi); }
+  .btn.primary { background: var(--accent); color: #02131d; border-color: var(--accent); }
+  .btn.primary:hover { background: #7ce5ff; }
   #install-btn { display: none; }
+  #lang-toggle { min-width: 3.2rem; justify-content: center; }
+
+  /* ---------- HUD 边角框 ---------- */
+  .hud-frame { position: relative; }
+  .hud-frame::before, .hud-frame::after,
+  .hud-frame .c3, .hud-frame .c4 {
+    content: ""; position: absolute; width: 14px; height: 14px;
+    border: 1px solid var(--line-hi); pointer-events: none;
+  }
+  .hud-frame::before { top: -1px; left: -1px; border-right: 0; border-bottom: 0; }
+  .hud-frame::after  { top: -1px; right: -1px; border-left: 0; border-bottom: 0; }
+  .hud-frame .c3 { bottom: -1px; left: -1px; border-right: 0; border-top: 0; }
+  .hud-frame .c4 { bottom: -1px; right: -1px; border-left: 0; border-top: 0; }
 
   /* ---------- Hero ---------- */
   .hero {
-    min-height: 88vh; display: flex; flex-direction: column;
+    min-height: 90vh; display: flex; flex-direction: column;
     align-items: center; justify-content: center;
-    text-align: center; padding: 4rem 1.5rem 3rem;
+    text-align: center; padding: 3rem 1.5rem;
   }
-  .badge {
-    display: inline-flex; align-items: center; gap: .5rem;
-    border: 1px solid rgba(77,179,255,.35); color: var(--accent);
-    padding: .4rem 1.1rem; border-radius: 999px;
-    font-size: .82rem; letter-spacing: .14em;
-    background: rgba(77,179,255,.07); margin-bottom: 1.8rem;
+  .term {
+    font-family: var(--mono); font-size: .8rem; color: var(--accent);
+    letter-spacing: .18em; margin-bottom: 1.6rem;
   }
-  .badge .dot { width: 7px; height: 7px; border-radius: 50%;
-    background: #59ff80; box-shadow: 0 0 10px #59ff80; animation: pulse 2s infinite; }
-  @keyframes pulse { 50% { opacity: .4; } }
+  .term .ok { color: #59ff9c; }
+  .term::before { content: "> "; color: var(--muted); }
   h1 {
-    font-family: "Press Start 2P", monospace;
-    font-size: clamp(1.9rem, 5.5vw, 3.6rem);
-    font-weight: 400; letter-spacing: .01em; line-height: 1.25;
-    background: linear-gradient(115deg, #fff 25%, var(--accent) 60%, var(--accent2) 100%);
-    -webkit-background-clip: text; background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 1.3rem;
+    font-family: var(--px);
+    font-size: clamp(1.7rem, 5vw, 3.2rem);
+    color: #fff; line-height: 1.35; letter-spacing: .02em;
+    text-shadow: 0 0 24px rgba(77, 216, 255, .45), 0 0 60px rgba(77, 216, 255, .2);
+    margin-bottom: 1.4rem;
   }
-  .hero p.sub { color: var(--muted); font-size: clamp(1rem, 2vw, 1.2rem);
-    max-width: 36em; }
-  .hero .cta-row { display: flex; gap: .9rem; margin-top: 2.4rem; flex-wrap: wrap;
-    justify-content: center; }
-  .hero .cta-row .btn { padding: .85rem 1.9rem; font-size: 1.02rem; }
+  h1 .accent { color: var(--accent); }
+  .hero p.sub { color: var(--muted); max-width: 36em;
+    font-size: clamp(.95rem, 1.6vw, 1.08rem); }
+  .hero .cta-row { display: flex; gap: .9rem; margin-top: 2.2rem;
+    flex-wrap: wrap; justify-content: center; }
+  .hero .cta-row .btn { padding: .8rem 1.8rem; font-size: .92rem; }
 
-  .stats { display: flex; gap: clamp(1.5rem, 5vw, 4rem); margin-top: 3.5rem; }
+  .stats { display: flex; gap: clamp(1.2rem, 4vw, 3.5rem); margin-top: 3.2rem;
+    font-family: var(--mono); }
   .stat { text-align: center; }
-  .stat b { display: block; font-size: clamp(1.4rem, 3vw, 2rem);
-    background: linear-gradient(120deg, #fff, var(--accent));
-    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
-  .stat span { color: var(--muted); font-size: .85rem; }
+  .stat b { display: block; font-family: var(--px); font-weight: 400;
+    font-size: clamp(1rem, 2.4vw, 1.5rem); color: var(--accent); }
+  .stat span { color: var(--muted); font-size: .75rem; letter-spacing: .08em; }
+
+  /* ---------- 区块标题 ---------- */
+  section { padding: 4rem 1.5rem; display: flex; flex-direction: column;
+    align-items: center; }
+  .sec-tag { font-family: var(--mono); color: var(--accent); font-size: .78rem;
+    letter-spacing: .2em; margin-bottom: .8rem; }
+  .sec-tag::before { content: "// "; color: var(--muted); }
+  .sec-title { font-family: var(--px); font-weight: 400; color: #fff;
+    font-size: clamp(1.1rem, 2.8vw, 1.6rem); margin-bottom: .7rem; text-align: center; }
+  .sec-sub { color: var(--muted); font-size: .95rem; margin-bottom: 2.4rem;
+    text-align: center; max-width: 36em; }
 
   /* ---------- 游戏区 ---------- */
-  .play { display: flex; flex-direction: column; align-items: center;
-    padding: 2rem 1rem 5rem; }
-  .section-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800;
-    letter-spacing: -.01em; margin-bottom: .6rem; text-align: center; }
-  .section-sub { color: var(--muted); margin-bottom: 2.2rem; text-align: center;
-    max-width: 34em; }
-  .device {
-    position: relative; border-radius: 26px; padding: 12px;
-    background: linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.02));
-    border: 1px solid var(--border);
-    box-shadow: 0 0 80px rgba(77,179,255,.14), 0 40px 90px rgba(0,0,0,.65);
+  .game-shell {
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 14px;
   }
-  .device .screen {
-    border-radius: 16px; overflow: hidden; background: #000;
-    width: 440px; max-width: 88vw; aspect-ratio: 480 / 720;
+  .game-shell .screen {
+    width: 440px; max-width: 86vw; aspect-ratio: 480 / 720;
+    background: #000; overflow: hidden;
   }
-  .device iframe { width: 100%; height: 100%; border: 0; display: block; }
-  .hint { margin-top: 1.4rem; color: var(--muted); font-size: .95rem; text-align: center; }
+  .game-shell iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .hint { margin-top: 1.3rem; color: var(--muted); font-size: .9rem;
+    text-align: center; font-family: var(--mono); }
   .hint + .hint { margin-top: .5rem; }
   kbd {
-    background: #161c2c; border: 1px solid #33405a; border-bottom-width: 3px;
-    border-radius: 6px; padding: .12em .55em; font-family: inherit; font-size: .85em;
+    background: rgba(77, 216, 255, .08); border: 1px solid var(--line);
+    border-bottom-width: 2px; padding: .1em .5em;
+    font-family: var(--mono); font-size: .82em; color: var(--accent);
   }
-
-  /* ---------- 卡片 ---------- */
-  .features {
-    display: grid; gap: 1.3rem;
-    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
-    max-width: 1060px; width: 100%;
-    padding: 1rem 1.5rem 5rem; margin: 0 auto;
-  }
-  .card {
-    position: relative; overflow: hidden;
-    background: var(--surface); border: 1px solid var(--border);
-    border-radius: var(--radius); padding: 1.6rem 1.4rem;
-    backdrop-filter: blur(8px);
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
-  }
-  .card::before {
-    content: ""; position: absolute; inset: 0 0 auto; height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(77,179,255,.6), transparent);
-    opacity: 0; transition: opacity .2s ease;
-  }
-  .card:hover { transform: translateY(-5px); border-color: rgba(77,179,255,.35);
-    box-shadow: 0 20px 50px rgba(0,0,0,.4); }
-  .card:hover::before { opacity: 1; }
-  .chip {
-    width: 44px; height: 44px; border-radius: 12px; margin-bottom: 1rem;
-    display: grid; place-items: center; font-size: 1.3rem;
-    background: linear-gradient(140deg, rgba(77,179,255,.22), rgba(150,90,255,.14));
-    border: 1px solid rgba(77,179,255,.3);
-  }
-  .card h3 { font-size: 1.08rem; margin-bottom: .45rem; }
-  .card p { color: var(--muted); font-size: .93rem; }
 
   /* ---------- 截图展示 ---------- */
-  .gallery { display: flex; flex-direction: column; align-items: center;
-    padding: 1rem 1.5rem 4rem; }
-  .shots {
-    display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center;
-    max-width: 1060px;
-  }
+  .shots { display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center;
+    max-width: 1060px; }
   .shots figure {
     position: relative; overflow: hidden;
-    border-radius: 18px; border: 1px solid var(--border);
-    background: var(--surface);
-    box-shadow: 0 20px 60px rgba(0,0,0,.5);
-    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+    border: 1px solid var(--line); background: #000;
+    transition: border-color .2s ease, transform .2s ease;
   }
-  .shots figure:hover {
-    transform: translateY(-6px) scale(1.02);
-    border-color: rgba(77,179,255,.45);
-    box-shadow: 0 0 50px rgba(77,179,255,.18), 0 30px 70px rgba(0,0,0,.6);
-  }
+  .shots figure:hover { border-color: var(--line-hi); transform: translateY(-4px); }
   .shots img { display: block; width: 260px; max-width: 80vw; height: auto; }
   .shots figcaption {
     position: absolute; left: 0; right: 0; bottom: 0;
-    padding: 2rem .9rem .7rem;
-    background: linear-gradient(transparent, rgba(5,6,15,.92));
-    font-size: .85rem; color: var(--muted);
+    padding: 1.8rem .8rem .6rem;
+    background: linear-gradient(transparent, rgba(3, 5, 9, .95));
+    font-family: var(--mono); font-size: .72rem; color: var(--muted);
+    letter-spacing: .04em;
   }
 
-  /* ---------- 滚动显现 ---------- */
-  .reveal { opacity: 0; transform: translateY(26px);
-    transition: opacity .7s ease, transform .7s ease; }
+  /* ---------- 特性 ---------- */
+  .features { display: grid; gap: 1.1rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    max-width: 1060px; width: 100%; }
+  .card {
+    background: var(--panel); border: 1px solid var(--line);
+    padding: 1.3rem 1.2rem; position: relative;
+    transition: border-color .2s ease, background .2s ease;
+  }
+  .card:hover { border-color: var(--line-hi); background: rgba(77, 216, 255, .05); }
+  .card .chip {
+    font-family: var(--mono); color: var(--accent); font-size: .75rem;
+    letter-spacing: .12em; margin-bottom: .7rem;
+  }
+  .card h3 { font-size: 1rem; margin-bottom: .4rem; color: #fff; }
+  .card p { color: var(--muted); font-size: .88rem; }
+
+  .reveal { opacity: 0; transform: translateY(24px);
+    transition: opacity .6s ease, transform .6s ease; }
   .reveal.in { opacity: 1; transform: none; }
 
   footer {
-    text-align: center; color: var(--muted); font-size: .85rem;
-    padding: 2rem 1rem 3rem; border-top: 1px solid var(--border);
+    text-align: center; color: var(--muted); font-family: var(--mono);
+    font-size: .75rem; letter-spacing: .06em;
+    padding: 2rem 1rem 2.6rem; border-top: 1px solid var(--line);
   }
   footer a { color: var(--accent); text-decoration: none; }
 
   @media (max-width: 560px) {
-    .stats { gap: 1.2rem; }
-    nav .name { display: none; }
+    nav .tag { display: none; }
+    .stats { gap: 1.1rem; }
   }
 </style>
 </head>
 <body>
-  <div class="aurora">
-    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
-  </div>
   <div class="stars"></div>
-  <div class="grid-overlay"></div>
+  <div class="grid"></div>
+  <div class="vignette"></div>
+  <div class="scanlines"></div>
 
   <nav>
     <img class="logo" src="icons/icon-192.png" alt="logo">
-    <span class="name">Dodge the Creeps</span>
+    <span class="name">DODGE THE CREEPS</span>
+    <span class="tag">v2.0 // space-survival</span>
     <span class="spacer"></span>
-    <button class="btn" id="install-btn">⬇ 安装应用</button>
-    <a class="btn primary" href="#play">▶ 开始游戏</a>
+    <button class="btn" id="lang-toggle">EN</button>
+    <button class="btn" id="install-btn" data-i18n="install">安装应用</button>
+    <a class="btn primary" href="#play" data-i18n="play">开始游戏</a>
   </nav>
 
   <main>
     <section class="hero">
-      <div class="badge"><span class="dot"></span>HTML5 · 免下载 · 可离线</div>
-      <h1>Dodge the Creeps</h1>
-      <p class="sub">驾驶你的小飞船，在一波强过一波的怪物洪流中活下去。
-        击落五种敌人、挑战召唤小怪的 Boss、拾取六种强化道具 —— 每一波，都是新的纪录。</p>
+      <div class="term" data-i18n="term">系统就绪 · HTML5 · 免下载 · 可离线</div>
+      <h1>DODGE <span class="accent">THE</span> CREEPS</h1>
+      <p class="sub" data-i18n="hero_sub">驾驶你的小飞船，在一波强过一波的怪物洪流中活下去。五种敌人、召唤小怪的 Boss、七种强化道具、三条命——你能撑到第几波？</p>
       <div class="cta-row">
-        <a class="btn primary" href="#play">▶ 立即开玩</a>
-        <a class="btn" href="#features">了解玩法</a>
+        <a class="btn primary" href="#play" data-i18n="cta_play">▶ 立即出击</a>
+        <a class="btn" href="#features" data-i18n="cta_features">查看玩法</a>
       </div>
       <div class="stats">
-        <div class="stat"><b>5 类</b><span>敌人与 Boss</span></div>
-        <div class="stat"><b>6 种</b><span>火力强化道具</span></div>
-        <div class="stat"><b>∞</b><span>波次无上限</span></div>
+        <div class="stat"><b>5</b><span data-i18n="stat1">敌人类型</span></div>
+        <div class="stat"><b>7</b><span data-i18n="stat2">强化道具</span></div>
+        <div class="stat"><b>3</b><span data-i18n="stat3">初始生命</span></div>
+        <div class="stat"><b>∞</b><span data-i18n="stat4">波次上限</span></div>
       </div>
     </section>
 
-    <section class="play reveal" id="play">
-      <h2 class="section-title">直接开玩</h2>
-      <p class="section-sub">点击画面，用键盘操作。你的最高分会保存在本机。</p>
-      <div class="device">
+    <section id="play" class="reveal">
+      <div class="sec-tag" data-i18n="tag_play">开始任务</div>
+      <h2 class="sec-title" data-i18n="play_title">直接进入战斗</h2>
+      <p class="sec-sub" data-i18n="play_sub">点击画面开始。最高分会保存在你的设备上。</p>
+      <div class="game-shell hud-frame">
+        <i class="c3"></i><i class="c4"></i>
         <div class="screen">
           <iframe id="game" title="Dodge the Creeps" allow="autoplay; keyboard; gamepad; fullscreen" allowfullscreen tabindex="0"></iframe>
         </div>
       </div>
-      <p class="hint" id="hint-desktop">
-        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> 移动 ·
-        <kbd>空格</kbd>/<kbd>J</kbd> 射击 · <kbd>Esc</kbd> / 右上角按钮暂停
-      </p>
-      <p class="hint" id="hint-mobile" style="display:none">
-        👆 手指拖动 = 移动飞船（按住屏幕自动开火）· 右上角按钮暂停
-      </p>
-      <p class="hint">
-        掉落道具：<span style="color:#4dd2ff">● 三向炮</span> ·
-        <span style="color:#ffd94d">⚡ 射速提升</span> ·
-        <span style="color:#59ff80">◎ 护盾</span>
-      </p>
+      <p class="hint" id="hint-desktop" data-i18n="hint_desktop"></p>
+      <p class="hint" id="hint-mobile" style="display:none" data-i18n="hint_mobile"></p>
     </section>
 
     <section class="gallery reveal">
-      <h2 class="section-title">游戏画面</h2>
-      <p class="section-sub">敌人家族 · Boss 战 · 强化道具 · 爆炸特效</p>
+      <div class="sec-tag" data-i18n="tag_shots">战场影像</div>
+      <h2 class="sec-title" data-i18n="shots_title">游戏画面</h2>
+      <p class="sec-sub" data-i18n="shots_sub">实机截图 · 无任何后期</p>
       <div class="shots">
-        <figure>
-          <img src="shots/combat.png" alt="战斗画面" loading="lazy">
-          <figcaption>五种敌人 + 六种强化道具，火力全开</figcaption>
+        <figure class="hud-frame"><i class="c3"></i><i class="c4"></i>
+          <img src="shots/combat.png" alt="combat" loading="lazy">
+          <figcaption data-i18n="cap1">敌人家族 × 火力强化</figcaption>
         </figure>
-        <figure>
-          <img src="shots/boss.png" alt="Boss 战" loading="lazy">
-          <figcaption>每 5 波一次 Boss 遭遇战</figcaption>
+        <figure class="hud-frame"><i class="c3"></i><i class="c4"></i>
+          <img src="shots/boss.png" alt="boss fight" loading="lazy">
+          <figcaption data-i18n="cap2">每 5 波一次 BOSS 遭遇战</figcaption>
         </figure>
-        <figure>
-          <img src="shots/upgrade.png" alt="强化三选一" loading="lazy">
-          <figcaption>击败 Boss 后三选一强化构筑</figcaption>
+        <figure class="hud-frame"><i class="c3"></i><i class="c4"></i>
+          <img src="shots/upgrade.png" alt="upgrade choice" loading="lazy">
+          <figcaption data-i18n="cap3">击败 BOSS · 三选一强化</figcaption>
         </figure>
       </div>
     </section>
 
     <section class="features reveal" id="features">
-      <div class="card">
-        <div class="chip">🚀</div>
-        <h3>纯浏览器运行</h3>
-        <p>WebAssembly 全速驱动，无需下载安装。还可以"安装应用"，离线也能玩。</p>
-      </div>
-      <div class="card">
-        <div class="chip">👾</div>
-        <h3>敌人家族</h3>
-        <p>普通怪、快速小妖、追踪怪、多血坦克各有行为，每 5 波还有召唤小怪的 Boss。</p>
-      </div>
-      <div class="card">
-        <div class="chip">🔫</div>
-        <h3>六种强化道具</h3>
-        <p>三向炮、射速、护盾、磁铁、清屏炸弹、双倍分数——从逃命变成反杀。</p>
-      </div>
-      <div class="card">
-        <div class="chip">🌊</div>
-        <h3>波次挑战</h3>
-        <p>一波强过一波，波次间短暂休整，击败 Boss 后三选一强化构筑。</p>
-      </div>
-      <div class="card">
-        <div class="chip">💥</div>
-        <h3>打击感拉满</h3>
-        <p>爆炸粒子、屏幕震动、子弹拖尾、道具呼吸光效，每一发命中都有反馈。</p>
-      </div>
-      <div class="card">
-        <div class="chip">🏆</div>
-        <h3>最高分记录</h3>
-        <p>最高分自动保存在你的浏览器里，随时回来挑战自己的极限。</p>
+      <div class="sec-tag" data-i18n="tag_feat">任务简报</div>
+      <h2 class="sec-title" data-i18n="feat_title">全部特性</h2>
+      <p class="sec-sub" data-i18n="feat_sub">一个完整的街机游戏，跑在浏览器里</p>
+      <div class="features">
+        <div class="card"><div class="chip">FEAT.01</div>
+          <h3 data-i18n="f1t">纯浏览器运行</h3>
+          <p data-i18n="f1d">WebAssembly 驱动，免下载免安装。可"安装应用"，离线也能玩。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.02</div>
+          <h3 data-i18n="f2t">触屏 + 全屏</h3>
+          <p data-i18n="f2d">手机拖动移动、按住自动开火，右上角一键全屏。桌面键盘/鼠标拖同样支持。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.03</div>
+          <h3 data-i18n="f3t">生命值系统</h3>
+          <p data-i18n="f3d">3 条命开局，被撞后原地无敌重生。击落敌人与定时掉落爱心可回血。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.04</div>
+          <h3 data-i18n="f4t">敌人家族与 BOSS</h3>
+          <p data-i18n="f4d">普通怪、快速小妖、追踪怪、多血坦克，每 5 波迎战召唤小怪的 BOSS。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.05</div>
+          <h3 data-i18n="f5t">七种强化道具</h3>
+          <p data-i18n="f5d">三向炮、射速、护盾、磁铁、清屏炸弹、双倍分、爱心——掉落随机，局局不同。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.06</div>
+          <h3 data-i18n="f6t">波次与构筑</h3>
+          <p data-i18n="f6d">一波强过一波，波间休整。击败 BOSS 后三选一强化，打造你的流派。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.07</div>
+          <h3 data-i18n="f7t">复古视听</h3>
+          <p data-i18n="f7d">像素字体、爆炸粒子、屏幕震动、8-bit 芯片音乐与音效，全部由代码生成。</p>
+        </div>
+        <div class="card"><div class="chip">FEAT.08</div>
+          <h3 data-i18n="f8t">最高分记录</h3>
+          <p data-i18n="f8d">最高分自动保存在本机，随时回来挑战自己的极限。</p>
+        </div>
       </div>
     </section>
   </main>
 
   <footer>
-    Built with <a href="https://godotengine.org" target="_blank" rel="noopener">Godot Engine 4.3</a>
-    · 游戏、音效与图标均由代码生成
+    <span data-i18n="footer">Built with</span>
+    <a href="https://godotengine.org" target="_blank" rel="noopener">Godot Engine 4.3</a>
+    · <span data-i18n="footer2">美术 / 音乐 / 音效全部由代码生成</span>
   </footer>
 
   <script>
-    // 触屏设备显示触屏操作提示
+    // ---------- 中英文切换 ----------
+    const I18N = {
+      zh: {
+        install: "安装应用", play: "开始游戏",
+        term: "系统就绪 · HTML5 · 免下载 · 可离线",
+        hero_sub: "驾驶你的小飞船，在一波强过一波的怪物洪流中活下去。五种敌人、召唤小怪的 Boss、七种强化道具、三条命——你能撑到第几波？",
+        cta_play: "▶ 立即出击", cta_features: "查看玩法",
+        stat1: "敌人类型", stat2: "强化道具", stat3: "初始生命", stat4: "波次上限",
+        tag_play: "开始任务", play_title: "直接进入战斗",
+        play_sub: "点击画面开始。最高分会保存在你的设备上。",
+        hint_desktop: "<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> 移动 · <kbd>空格</kbd>/<kbd>J</kbd> 射击 · <kbd>Esc</kbd> 暂停 · FULL 全屏",
+        hint_mobile: "👆 拖动 = 移动 · 按住 = 自动开火 · 右上角 FULL 全屏 / II 暂停",
+        tag_shots: "战场影像", shots_title: "游戏画面", shots_sub: "实机截图 · 无任何后期",
+        cap1: "敌人家族 × 火力强化", cap2: "每 5 波一次 BOSS 遭遇战", cap3: "击败 BOSS · 三选一强化",
+        tag_feat: "任务简报", feat_title: "全部特性", feat_sub: "一个完整的街机游戏，跑在浏览器里",
+        f1t: "纯浏览器运行", f1d: "WebAssembly 驱动，免下载免安装。可「安装应用」，离线也能玩。",
+        f2t: "触屏 + 全屏", f2d: "手机拖动移动、按住自动开火，右上角一键全屏。桌面键盘/鼠标拖同样支持。",
+        f3t: "生命值系统", f3d: "3 条命开局，被撞后原地无敌重生。击落敌人与定时掉落爱心可回血。",
+        f4t: "敌人家族与 BOSS", f4d: "普通怪、快速小妖、追踪怪、多血坦克，每 5 波迎战召唤小怪的 BOSS。",
+        f5t: "七种强化道具", f5d: "三向炮、射速、护盾、磁铁、清屏炸弹、双倍分、爱心——掉落随机，局局不同。",
+        f6t: "波次与构筑", f6d: "一波强过一波，波间休整。击败 BOSS 后三选一强化，打造你的流派。",
+        f7t: "复古视听", f7d: "像素字体、爆炸粒子、屏幕震动、8-bit 芯片音乐与音效，全部由代码生成。",
+        f8t: "最高分记录", f8d: "最高分自动保存在本机，随时回来挑战自己的极限。",
+        footer: "Built with", footer2: "美术 / 音乐 / 音效全部由代码生成",
+      },
+      en: {
+        install: "Install App", play: "PLAY",
+        term: "SYSTEM READY · HTML5 · NO DOWNLOAD · OFFLINE OK",
+        hero_sub: "Pilot your ship through waves of creeps. Five enemy types, a minion-spawning boss, seven power-ups and three lives — how many waves can you survive?",
+        cta_play: "▶ LAUNCH", cta_features: "BRIEFING",
+        stat1: "ENEMY TYPES", stat2: "POWER-UPS", stat3: "LIVES", stat4: "WAVE LIMIT",
+        tag_play: "MISSION START", play_title: "ENTER COMBAT",
+        play_sub: "Click the screen to play. Your high score is saved on this device.",
+        hint_desktop: "<kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>Arrows</kbd> move · <kbd>Space</kbd>/<kbd>J</kbd> shoot · <kbd>Esc</kbd> pause · FULL for fullscreen",
+        hint_mobile: "👆 Drag to move · Hold to auto-fire · FULL = fullscreen, II = pause",
+        tag_shots: "COMBAT FOOTAGE", shots_title: "SCREENSHOTS", shots_sub: "Captured in-game · No retouching",
+        cap1: "ENEMY FAMILY × FIREPOWER", cap2: "BOSS FIGHT EVERY 5 WAVES", cap3: "PICK 1 OF 3 UPGRADES",
+        tag_feat: "MISSION BRIEF", feat_title: "ALL FEATURES", feat_sub: "A complete arcade game, running in your browser",
+        f1t: "Pure Browser", f1d: "Powered by WebAssembly. No download. Installable as an app for offline play.",
+        f2t: "Touch + Fullscreen", f2d: "Drag to move, hold to auto-fire on mobile, one-tap fullscreen. Keyboard & mouse-drag on desktop.",
+        f3t: "Lives System", f3d: "Start with 3 lives and respawn invincible. Hearts drop from kills and on a timer to heal.",
+        f4t: "Enemies & Boss", f4d: "Creeps, dashers, chasers and armored tanks — plus a minion-spawning boss every 5 waves.",
+        f5t: "Seven Power-ups", f5d: "Triple shot, rapid fire, shield, magnet, screen-clearing bomb, 2X score and hearts.",
+        f6t: "Waves & Builds", f6d: "Harder every wave with short rests. Beat the boss, pick 1 of 3 upgrades, build your run.",
+        f7t: "Retro A/V", f7d: "Pixel font, explosion particles, screen shake, 8-bit chip music and SFX — all generated by code.",
+        f8t: "High Score", f8d: "Your best score is saved locally. Come back anytime and beat it.",
+        footer: "Built with", footer2: "Art, music & SFX generated entirely by code",
+      },
+    };
+
+    const langBtn = document.getElementById('lang-toggle');
+    function setLang(lang) {
+      document.documentElement.lang = lang === 'zh' ? 'zh-CN' : 'en';
+      document.querySelectorAll('[data-i18n]').forEach((el) => {
+        const key = el.getAttribute('data-i18n');
+        if (I18N[lang][key] !== undefined) el.innerHTML = I18N[lang][key];
+      });
+      langBtn.textContent = lang === 'zh' ? 'EN' : '中';
+      localStorage.setItem('dodge-lang', lang);
+    }
+    langBtn.addEventListener('click', () => {
+      setLang(document.documentElement.lang === 'zh-CN' ? 'en' : 'zh');
+    });
+    setLang(localStorage.getItem('dodge-lang') || 'zh');
+
+    // ---------- 触屏提示切换 ----------
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
       document.getElementById('hint-desktop').style.display = 'none';
       document.getElementById('hint-mobile').style.display = '';
     }
 
-    // 滚动到游戏区时再加载游戏，首屏更快
+    // ---------- 游戏懒加载 ----------
     const iframe = document.getElementById('game');
     const io = new IntersectionObserver((entries) => {
       if (entries[0].isIntersecting && !iframe.src) {
@@ -391,7 +438,6 @@
     }, { rootMargin: '400px' });
     io.observe(iframe);
 
-    // 游戏聚焦时方向键不滚动页面
     window.addEventListener('keydown', (e) => {
       if (document.activeElement === iframe &&
           ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
@@ -399,13 +445,13 @@
       }
     });
 
-    // 滚动显现动画
+    // ---------- 滚动显现 ----------
     const ro = new IntersectionObserver((entries) => {
       entries.forEach((en) => en.isIntersecting && en.target.classList.add('in'));
-    }, { threshold: 0.12 });
+    }, { threshold: 0.1 });
     document.querySelectorAll('.reveal').forEach((el) => ro.observe(el));
 
-    // PWA：注册 Service Worker + 安装按钮
+    // ---------- PWA ----------
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(() => {});
     }

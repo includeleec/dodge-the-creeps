@@ -1,5 +1,5 @@
 // Service Worker：让站点可安装、游戏可离线玩
-const VERSION = "dodge-v5";
+const VERSION = "dodge-v6";
 const PRECACHE = [
   "./",
   "./index.html",

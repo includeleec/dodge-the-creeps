@@ -4,7 +4,7 @@
 // Incrementing CACHE_VERSION will kick off the install event and force
 // previously cached resources to be updated from the network.
 /** @type {string} */
-const CACHE_VERSION = '1784389994|7797502';
+const CACHE_VERSION = '1784392126|10693549';
 /** @type {string} */
 const CACHE_PREFIX = 'Dodge the Creeps-sw-cache-';
 const CACHE_NAME = CACHE_PREFIX + CACHE_VERSION;
