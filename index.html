@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dodge the Creeps · 浏览器直接玩的太空生存游戏</title>
+<meta name="description" content="驾驶小飞船在怪物洪流中生存：击落敌人、拾取强化、挑战最高分。HTML5 免下载，可安装为应用离线游玩。">
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#05060f">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+
+<!-- 社交分享 -->
+<meta property="og:title" content="Dodge the Creeps">
+<meta property="og:description" content="在怪物洪流中活下去 —— 打开浏览器就能玩的街机小游戏">
+<meta property="og:type" content="website">
+<meta property="og:image" content="icons/og-image.png">
+
+<style>
+  :root {
+    --bg: #05060f;
+    --surface: rgba(255, 255, 255, .04);
+    --border: rgba(255, 255, 255, .09);
+    --accent: #4db3ff;
+    --accent2: #ff6b6b;
+    --text: #eef2fa;
+    --muted: #8b93a7;
+    --radius: 20px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: "Inter", "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+    overflow-x: hidden; line-height: 1.6;
+  }
+  ::selection { background: rgba(77, 179, 255, .35); }
+
+  /* ---------- 背景：极光光斑 + 星星 + 网格 ---------- */
+  .aurora { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(110px); opacity: .5; will-change: transform;
+  }
+  .blob.b1 { width: 46vw; height: 46vw; left: -12vw; top: -14vw;
+    background: radial-gradient(circle, rgba(77,179,255,.30), transparent 70%);
+    animation: float1 26s ease-in-out infinite; }
+  .blob.b2 { width: 40vw; height: 40vw; right: -14vw; top: 30vh;
+    background: radial-gradient(circle, rgba(150,90,255,.26), transparent 70%);
+    animation: float2 32s ease-in-out infinite; }
+  .blob.b3 { width: 38vw; height: 38vw; left: 18vw; bottom: -20vw;
+    background: radial-gradient(circle, rgba(255,107,107,.20), transparent 70%);
+    animation: float1 38s ease-in-out infinite reverse; }
+  @keyframes float1 { 50% { transform: translate(6vw, 4vh) scale(1.12); } }
+  @keyframes float2 { 50% { transform: translate(-5vw, -6vh) scale(.92); } }
+
+  .stars { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    animation: drift 160s linear infinite; }
+  .stars::after {
+    content: ""; position: absolute; inset: -1000px;
+    background-image:
+      radial-gradient(1.6px 1.6px at 20px 30px, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 130px 80px, #fff, transparent),
+      radial-gradient(1px 1px at 70px 150px, #fff, transparent),
+      radial-gradient(1.8px 1.8px at 200px 200px, #9fd0ff, transparent),
+      radial-gradient(1px 1px at 300px 60px, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 380px 300px, #fff, transparent),
+      radial-gradient(1px 1px at 450px 120px, #ffd39f, transparent),
+      radial-gradient(1.6px 1.6px at 520px 400px, #fff, transparent),
+      radial-gradient(1px 1px at 600px 250px, #fff, transparent),
+      radial-gradient(1.8px 1.8px at 90px 420px, #fff, transparent),
+      radial-gradient(1px 1px at 250px 520px, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 700px 90px, #9fd0ff, transparent),
+      radial-gradient(1px 1px at 800px 350px, #fff, transparent),
+      radial-gradient(1.8px 1.8px at 900px 500px, #fff, transparent),
+      radial-gradient(1px 1px at 1000px 180px, #fff, transparent),
+      radial-gradient(1.6px 1.6px at 1100px 600px, #ffd39f, transparent);
+    background-size: 1200px 700px;
+  }
+  @keyframes drift { to { transform: translateY(700px); } }
+
+  .grid-overlay { position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+                      linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+    background-size: 56px 56px;
+    mask-image: radial-gradient(ellipse 80% 60% at 50% 0%, #000 30%, transparent 75%);
+  }
+
+  nav, main, footer { position: relative; z-index: 1; }
+
+  /* ---------- 导航 ---------- */
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; align-items: center; gap: .7rem;
+    padding: .8rem clamp(1rem, 4vw, 3rem);
+    background: rgba(5, 6, 15, .55);
+    backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .logo { width: 30px; height: 30px; border-radius: 8px; }
+  nav .name { font-weight: 700; letter-spacing: .02em; }
+  nav .spacer { flex: 1; }
+  .btn {
+    display: inline-flex; align-items: center; gap: .45rem;
+    padding: .55rem 1.25rem; border-radius: 999px;
+    font-size: .92rem; font-weight: 600; text-decoration: none;
+    border: 1px solid var(--border); color: var(--text);
+    background: var(--surface); cursor: pointer;
+    transition: transform .15s ease, box-shadow .15s ease, background .15s ease;
+  }
+  .btn:hover { transform: translateY(-2px); background: rgba(255,255,255,.08); }
+  .btn.primary {
+    background: linear-gradient(120deg, var(--accent), #2f7fe0);
+    border: none; color: #04101f;
+    box-shadow: 0 0 24px rgba(77,179,255,.35);
+  }
+  .btn.primary:hover { box-shadow: 0 0 40px rgba(77,179,255,.55); }
+  #install-btn { display: none; }
+
+  /* ---------- Hero ---------- */
+  .hero {
+    min-height: 88vh; display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    text-align: center; padding: 4rem 1.5rem 3rem;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: .5rem;
+    border: 1px solid rgba(77,179,255,.35); color: var(--accent);
+    padding: .4rem 1.1rem; border-radius: 999px;
+    font-size: .82rem; letter-spacing: .14em;
+    background: rgba(77,179,255,.07); margin-bottom: 1.8rem;
+  }
+  .badge .dot { width: 7px; height: 7px; border-radius: 50%;
+    background: #59ff80; box-shadow: 0 0 10px #59ff80; animation: pulse 2s infinite; }
+  @keyframes pulse { 50% { opacity: .4; } }
+  h1 {
+    font-size: clamp(2.8rem, 8vw, 5.6rem);
+    font-weight: 800; letter-spacing: -.02em; line-height: 1.05;
+    background: linear-gradient(115deg, #fff 25%, var(--accent) 60%, var(--accent2) 100%);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 1.3rem;
+  }
+  .hero p.sub { color: var(--muted); font-size: clamp(1rem, 2vw, 1.2rem);
+    max-width: 36em; }
+  .hero .cta-row { display: flex; gap: .9rem; margin-top: 2.4rem; flex-wrap: wrap;
+    justify-content: center; }
+  .hero .cta-row .btn { padding: .85rem 1.9rem; font-size: 1.02rem; }
+
+  .stats { display: flex; gap: clamp(1.5rem, 5vw, 4rem); margin-top: 3.5rem; }
+  .stat { text-align: center; }
+  .stat b { display: block; font-size: clamp(1.4rem, 3vw, 2rem);
+    background: linear-gradient(120deg, #fff, var(--accent));
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
+  .stat span { color: var(--muted); font-size: .85rem; }
+
+  /* ---------- 游戏区 ---------- */
+  .play { display: flex; flex-direction: column; align-items: center;
+    padding: 2rem 1rem 5rem; }
+  .section-title { font-size: clamp(1.6rem, 4vw, 2.4rem); font-weight: 800;
+    letter-spacing: -.01em; margin-bottom: .6rem; text-align: center; }
+  .section-sub { color: var(--muted); margin-bottom: 2.2rem; text-align: center;
+    max-width: 34em; }
+  .device {
+    position: relative; border-radius: 26px; padding: 12px;
+    background: linear-gradient(160deg, rgba(255,255,255,.10), rgba(255,255,255,.02));
+    border: 1px solid var(--border);
+    box-shadow: 0 0 80px rgba(77,179,255,.14), 0 40px 90px rgba(0,0,0,.65);
+  }
+  .device .screen {
+    border-radius: 16px; overflow: hidden; background: #000;
+    width: 440px; max-width: 88vw; aspect-ratio: 480 / 720;
+  }
+  .device iframe { width: 100%; height: 100%; border: 0; display: block; }
+  .hint { margin-top: 1.4rem; color: var(--muted); font-size: .95rem; text-align: center; }
+  .hint + .hint { margin-top: .5rem; }
+  kbd {
+    background: #161c2c; border: 1px solid #33405a; border-bottom-width: 3px;
+    border-radius: 6px; padding: .12em .55em; font-family: inherit; font-size: .85em;
+  }
+
+  /* ---------- 卡片 ---------- */
+  .features {
+    display: grid; gap: 1.3rem;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr));
+    max-width: 1060px; width: 100%;
+    padding: 1rem 1.5rem 5rem; margin: 0 auto;
+  }
+  .card {
+    position: relative; overflow: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.6rem 1.4rem;
+    backdrop-filter: blur(8px);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+  }
+  .card::before {
+    content: ""; position: absolute; inset: 0 0 auto; height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(77,179,255,.6), transparent);
+    opacity: 0; transition: opacity .2s ease;
+  }
+  .card:hover { transform: translateY(-5px); border-color: rgba(77,179,255,.35);
+    box-shadow: 0 20px 50px rgba(0,0,0,.4); }
+  .card:hover::before { opacity: 1; }
+  .chip {
+    width: 44px; height: 44px; border-radius: 12px; margin-bottom: 1rem;
+    display: grid; place-items: center; font-size: 1.3rem;
+    background: linear-gradient(140deg, rgba(77,179,255,.22), rgba(150,90,255,.14));
+    border: 1px solid rgba(77,179,255,.3);
+  }
+  .card h3 { font-size: 1.08rem; margin-bottom: .45rem; }
+  .card p { color: var(--muted); font-size: .93rem; }
+
+  /* ---------- 滚动显现 ---------- */
+  .reveal { opacity: 0; transform: translateY(26px);
+    transition: opacity .7s ease, transform .7s ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  footer {
+    text-align: center; color: var(--muted); font-size: .85rem;
+    padding: 2rem 1rem 3rem; border-top: 1px solid var(--border);
+  }
+  footer a { color: var(--accent); text-decoration: none; }
+
+  @media (max-width: 560px) {
+    .stats { gap: 1.2rem; }
+    nav .name { display: none; }
+  }
+</style>
+</head>
+<body>
+  <div class="aurora">
+    <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  </div>
+  <div class="stars"></div>
+  <div class="grid-overlay"></div>
+
+  <nav>
+    <img class="logo" src="icons/icon-192.png" alt="logo">
+    <span class="name">Dodge the Creeps</span>
+    <span class="spacer"></span>
+    <button class="btn" id="install-btn">⬇ 安装应用</button>
+    <a class="btn primary" href="#play">▶ 开始游戏</a>
+  </nav>
+
+  <main>
+    <section class="hero">
+      <div class="badge"><span class="dot"></span>HTML5 · 免下载 · 可离线</div>
+      <h1>Dodge the Creeps</h1>
+      <p class="sub">驾驶你的小飞船，在越来越密集的怪物洪流中活下去。
+        开火击落它们，拾取三向炮、射速与护盾强化 —— 每多撑一秒，都是新的纪录。</p>
+      <div class="cta-row">
+        <a class="btn primary" href="#play">▶ 立即开玩</a>
+        <a class="btn" href="#features">了解玩法</a>
+      </div>
+      <div class="stats">
+        <div class="stat"><b>0 安装</b><span>打开浏览器即玩</span></div>
+        <div class="stat"><b>3 种</b><span>火力强化道具</span></div>
+        <div class="stat"><b>∞</b><span>难度无上限递增</span></div>
+      </div>
+    </section>
+
+    <section class="play reveal" id="play">
+      <h2 class="section-title">直接开玩</h2>
+      <p class="section-sub">点击画面，用键盘操作。你的最高分会保存在本机。</p>
+      <div class="device">
+        <div class="screen">
+          <iframe id="game" title="Dodge the Creeps" allow="autoplay; keyboard; gamepad" tabindex="0"></iframe>
+        </div>
+      </div>
+      <p class="hint">
+        <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> 移动 ·
+        <kbd>空格</kbd>/<kbd>J</kbd> 射击 · <kbd>Esc</kbd> 暂停
+      </p>
+      <p class="hint">
+        掉落道具：<span style="color:#4dd2ff">● 三向炮</span> ·
+        <span style="color:#ffd94d">⚡ 射速提升</span> ·
+        <span style="color:#59ff80">◎ 护盾</span>
+      </p>
+    </section>
+
+    <section class="features reveal" id="features">
+      <div class="card">
+        <div class="chip">🚀</div>
+        <h3>纯浏览器运行</h3>
+        <p>WebAssembly 全速驱动，无需下载安装。还可以"安装应用"，离线也能玩。</p>
+      </div>
+      <div class="card">
+        <div class="chip">🔫</div>
+        <h3>火力强化</h3>
+        <p>击落怪物随机掉落三向炮、射速提升和护盾，从逃命变成反杀。</p>
+      </div>
+      <div class="card">
+        <div class="chip">📈</div>
+        <h3>难度递增</h3>
+        <p>活得越久，怪物刷得越快、飞得越猛。前 10 秒热身，30 秒后见真章。</p>
+      </div>
+      <div class="card">
+        <div class="chip">🏆</div>
+        <h3>最高分记录</h3>
+        <p>最高分自动保存在你的浏览器里，随时回来挑战自己的极限。</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    Built with <a href="https://godotengine.org" target="_blank" rel="noopener">Godot Engine 4.3</a>
+    · 游戏、音效与图标均由代码生成
+  </footer>
+
+  <script>
+    // 滚动到游戏区时再加载游戏，首屏更快
+    const iframe = document.getElementById('game');
+    const io = new IntersectionObserver((entries) => {
+      if (entries[0].isIntersecting && !iframe.src) {
+        iframe.src = 'game/index.html';
+        io.disconnect();
+      }
+    }, { rootMargin: '400px' });
+    io.observe(iframe);
+
+    // 游戏聚焦时方向键不滚动页面
+    window.addEventListener('keydown', (e) => {
+      if (document.activeElement === iframe &&
+          ['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+        e.preventDefault();
+      }
+    });
+
+    // 滚动显现动画
+    const ro = new IntersectionObserver((entries) => {
+      entries.forEach((en) => en.isIntersecting && en.target.classList.add('in'));
+    }, { threshold: 0.12 });
+    document.querySelectorAll('.reveal').forEach((el) => ro.observe(el));
+
+    // PWA：注册 Service Worker + 安装按钮
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+    let deferredPrompt = null;
+    const installBtn = document.getElementById('install-btn');
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      installBtn.style.display = 'inline-flex';
+    });
+    installBtn.addEventListener('click', async () => {
+      if (!deferredPrompt) return;
+      deferredPrompt.prompt();
+      await deferredPrompt.userChoice;
+      deferredPrompt = null;
+      installBtn.style.display = 'none';
+    });
+    window.addEventListener('appinstalled', () => {
+      installBtn.style.display = 'none';
+    });
+  </script>
+</body>
+</html>
