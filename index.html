@@ -212,6 +212,33 @@
   .card h3 { font-size: 1.08rem; margin-bottom: .45rem; }
   .card p { color: var(--muted); font-size: .93rem; }
 
+  /* ---------- 截图展示 ---------- */
+  .gallery { display: flex; flex-direction: column; align-items: center;
+    padding: 1rem 1.5rem 4rem; }
+  .shots {
+    display: flex; gap: 1.4rem; flex-wrap: wrap; justify-content: center;
+    max-width: 1060px;
+  }
+  .shots figure {
+    position: relative; overflow: hidden;
+    border-radius: 18px; border: 1px solid var(--border);
+    background: var(--surface);
+    box-shadow: 0 20px 60px rgba(0,0,0,.5);
+    transition: transform .25s ease, box-shadow .25s ease, border-color .25s ease;
+  }
+  .shots figure:hover {
+    transform: translateY(-6px) scale(1.02);
+    border-color: rgba(77,179,255,.45);
+    box-shadow: 0 0 50px rgba(77,179,255,.18), 0 30px 70px rgba(0,0,0,.6);
+  }
+  .shots img { display: block; width: 260px; max-width: 80vw; height: auto; }
+  .shots figcaption {
+    position: absolute; left: 0; right: 0; bottom: 0;
+    padding: 2rem .9rem .7rem;
+    background: linear-gradient(transparent, rgba(5,6,15,.92));
+    font-size: .85rem; color: var(--muted);
+  }
+
   /* ---------- 滚动显现 ---------- */
   .reveal { opacity: 0; transform: translateY(26px);
     transition: opacity .7s ease, transform .7s ease; }
@@ -248,16 +275,16 @@
     <section class="hero">
       <div class="badge"><span class="dot"></span>HTML5 · 免下载 · 可离线</div>
       <h1>Dodge the Creeps</h1>
-      <p class="sub">驾驶你的小飞船，在越来越密集的怪物洪流中活下去。
-        开火击落它们，拾取三向炮、射速与护盾强化 —— 每多撑一秒，都是新的纪录。</p>
+      <p class="sub">驾驶你的小飞船，在一波强过一波的怪物洪流中活下去。
+        击落五种敌人、挑战召唤小怪的 Boss、拾取六种强化道具 —— 每一波，都是新的纪录。</p>
       <div class="cta-row">
         <a class="btn primary" href="#play">▶ 立即开玩</a>
         <a class="btn" href="#features">了解玩法</a>
       </div>
       <div class="stats">
-        <div class="stat"><b>0 安装</b><span>打开浏览器即玩</span></div>
-        <div class="stat"><b>3 种</b><span>火力强化道具</span></div>
-        <div class="stat"><b>∞</b><span>难度无上限递增</span></div>
+        <div class="stat"><b>5 类</b><span>敌人与 Boss</span></div>
+        <div class="stat"><b>6 种</b><span>火力强化道具</span></div>
+        <div class="stat"><b>∞</b><span>波次无上限</span></div>
       </div>
     </section>
 
@@ -283,6 +310,25 @@
       </p>
     </section>
 
+    <section class="gallery reveal">
+      <h2 class="section-title">游戏画面</h2>
+      <p class="section-sub">敌人家族 · Boss 战 · 强化道具 · 爆炸特效</p>
+      <div class="shots">
+        <figure>
+          <img src="shots/combat.png" alt="战斗画面" loading="lazy">
+          <figcaption>五种敌人 + 六种强化道具，火力全开</figcaption>
+        </figure>
+        <figure>
+          <img src="shots/boss.png" alt="Boss 战" loading="lazy">
+          <figcaption>每 5 波一次 Boss 遭遇战</figcaption>
+        </figure>
+        <figure>
+          <img src="shots/upgrade.png" alt="强化三选一" loading="lazy">
+          <figcaption>击败 Boss 后三选一强化构筑</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section class="features reveal" id="features">
       <div class="card">
         <div class="chip">🚀</div>
@@ -290,14 +336,24 @@
         <p>WebAssembly 全速驱动，无需下载安装。还可以"安装应用"，离线也能玩。</p>
       </div>
       <div class="card">
-        <div class="chip">🔫</div>
-        <h3>火力强化</h3>
-        <p>击落怪物随机掉落三向炮、射速提升和护盾，从逃命变成反杀。</p>
+        <div class="chip">👾</div>
+        <h3>敌人家族</h3>
+        <p>普通怪、快速小妖、追踪怪、多血坦克各有行为，每 5 波还有召唤小怪的 Boss。</p>
       </div>
       <div class="card">
-        <div class="chip">📈</div>
-        <h3>难度递增</h3>
-        <p>活得越久，怪物刷得越快、飞得越猛。前 10 秒热身，30 秒后见真章。</p>
+        <div class="chip">🔫</div>
+        <h3>六种强化道具</h3>
+        <p>三向炮、射速、护盾、磁铁、清屏炸弹、双倍分数——从逃命变成反杀。</p>
+      </div>
+      <div class="card">
+        <div class="chip">🌊</div>
+        <h3>波次挑战</h3>
+        <p>一波强过一波，波次间短暂休整，击败 Boss 后三选一强化构筑。</p>
+      </div>
+      <div class="card">
+        <div class="chip">💥</div>
+        <h3>打击感拉满</h3>
+        <p>爆炸粒子、屏幕震动、子弹拖尾、道具呼吸光效，每一发命中都有反馈。</p>
       </div>
       <div class="card">
         <div class="chip">🏆</div>
