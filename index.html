@@ -269,9 +269,12 @@
           <iframe id="game" title="Dodge the Creeps" allow="autoplay; keyboard; gamepad" tabindex="0"></iframe>
         </div>
       </div>
-      <p class="hint">
+      <p class="hint" id="hint-desktop">
         <kbd>W</kbd><kbd>A</kbd><kbd>S</kbd><kbd>D</kbd> / <kbd>↑</kbd><kbd>←</kbd><kbd>↓</kbd><kbd>→</kbd> 移动 ·
-        <kbd>空格</kbd>/<kbd>J</kbd> 射击 · <kbd>Esc</kbd> 暂停
+        <kbd>空格</kbd>/<kbd>J</kbd> 射击 · <kbd>Esc</kbd> / 右上角按钮暂停
+      </p>
+      <p class="hint" id="hint-mobile" style="display:none">
+        👆 手指拖动 = 移动飞船（按住屏幕自动开火）· 右上角按钮暂停
       </p>
       <p class="hint">
         掉落道具：<span style="color:#4dd2ff">● 三向炮</span> ·
@@ -310,6 +313,12 @@
   </footer>
 
   <script>
+    // 触屏设备显示触屏操作提示
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+      document.getElementById('hint-desktop').style.display = 'none';
+      document.getElementById('hint-mobile').style.display = '';
+    }
+
     // 滚动到游戏区时再加载游戏，首屏更快
     const iframe = document.getElementById('game');
     const io = new IntersectionObserver((entries) => {
